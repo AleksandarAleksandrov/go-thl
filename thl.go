@@ -68,7 +68,7 @@ func Compare(first time.Time, second time.Time) int {
 }
 
 // Finds index of the date from the slice that is closest to the date passed
-func closestIndexTo(dateToCompare time.Time, datesSlice []time.Time) (int, error) {
+func ClosestIndexTo(dateToCompare time.Time, datesSlice []time.Time) (int, error) {
 
 	if datesSlice == nil {
 		return 0, errors.New("Passed slice of dates was nil")
@@ -78,7 +78,7 @@ func closestIndexTo(dateToCompare time.Time, datesSlice []time.Time) (int, error
 		return 0, errors.New("Passed slice of dates was of size 0")
 	}
 
-	var closestIndex int = 0
+	var closestIndex int
 	var currentMinMili int64 = math.MaxInt64
 	var currentMinNano int64 = math.MaxInt64
 
@@ -87,6 +87,8 @@ func closestIndexTo(dateToCompare time.Time, datesSlice []time.Time) (int, error
 	for index, date := range datesSlice {
 		unixDiffMili := dateMiliUnix - date.Unix()
 		unixDiffNano := dateNanoUnix - date.UnixNano()
+
+		// get the positive values
 		if unixDiffMili < 0 {
 			unixDiffMili = -1 * unixDiffMili
 		}
@@ -111,8 +113,8 @@ func closestIndexTo(dateToCompare time.Time, datesSlice []time.Time) (int, error
 }
 
 // Finds the date from the slice that is closest to the date passed
-func closestTo(dateToCompare time.Time, datesSlice []time.Time) (time.Time, error) {
-	index, err := closestIndexTo(dateToCompare, datesSlice)
+func ClosestTo(dateToCompare time.Time, datesSlice []time.Time) (time.Time, error) {
+	index, err := ClosestIndexTo(dateToCompare, datesSlice)
 
 	if err != nil {
 		return time.Time{}, err
@@ -122,12 +124,12 @@ func closestTo(dateToCompare time.Time, datesSlice []time.Time) (time.Time, erro
 }
 
 // Checks if the date is in the future
-func isFuture(dateToTest time.Time) bool {
+func IsFuture(dateToTest time.Time) bool {
 	return dateToTest.After(time.Now())
 }
 
 // Checks if the date is in the past
-func isPast(dateToTest time.Time) bool {
+func IsPast(dateToTest time.Time) bool {
 	return dateToTest.Before(time.Now())
 }
 
@@ -180,7 +182,7 @@ func AreRangesOverlapping(
 	endRangeStartDate,
 	endRangeEndDate time.Time) bool {
 	return initialRangeStartDate.Before(initialRangeEndDate) &&
-		initialRangeEndDate.Before(endRangeStartDate) &&
+		endRangeStartDate.Before(initialRangeEndDate) &&
 		endRangeStartDate.Before(endRangeEndDate)
 }
 
@@ -196,7 +198,7 @@ func GetOverlappingDaysInRanges(
 		return 0, errors.New("Ranges do no overlap")
 	}
 
-	return DaysDifference(endRangeStartDate, initialRangeEndDate), nil
+	return -1 * DaysDifference(endRangeStartDate, initialRangeEndDate), nil
 }
 
 // Cheks if the passed date is within the range
@@ -216,11 +218,14 @@ func DifferenceInMilliseconds(dateLeft, dateRight time.Time) int64 {
 	return leftInMill - rightInMil
 }
 
-func GetMilliseconds(date time.Time) int64 {
-	return date.UnixNano() / int64(time.Millisecond)
+func GetMilliseconds(date time.Time) int {
+	return date.Nanosecond() / int(time.Millisecond)
 }
 
-func SetMillisecond(date time.Time, amount int) time.Time {
+func SetMillisecond(date time.Time, amount int) (time.Time, error) {
+	if amount < 0 || amount > 1000 {
+		return date, errors.New("Passed amount was less than 0 or more than 1000. Date left unchanged.")
+	}
 	return time.Date(date.Year(),
 		date.Month(),
 		date.Day(),
@@ -228,7 +233,7 @@ func SetMillisecond(date time.Time, amount int) time.Time {
 		date.Minute(),
 		date.Second(),
 		int(time.Millisecond)*amount,
-		date.Location())
+		date.Location()), nil
 }
 
 // seconds helper
@@ -311,34 +316,34 @@ func StartOfMinute(date time.Time) time.Time {
 }
 
 // hour helpers
-func addHours(date time.Time, amount int) time.Time {
+func AddHours(date time.Time, amount int) time.Time {
 	return date.Add(time.Hour * time.Duration(amount))
 }
 
-func differenceInHours(dateLeft, dateRight time.Time) float64 {
+func DifferenceInHours(dateLeft, dateRight time.Time) float64 {
 	return dateLeft.Sub(dateRight).Hours()
 }
 
-func endOfHour(date time.Time) time.Time {
+func EndOfHour(date time.Time) time.Time {
 	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), 59, date.Second(), date.Nanosecond(), date.Location())
 }
 
-func isSameHour(dateLeft, dateRight time.Time) bool {
+func IsSameHour(dateLeft, dateRight time.Time) bool {
 	return dateLeft.Year() == dateRight.Year() &&
 		dateLeft.Month() == dateRight.Month() &&
 		dateLeft.Day() == dateRight.Day() &&
 		dateLeft.Hour() == dateRight.Hour()
 }
 
-func isThisHour(date time.Time) bool {
-	return isSameHour(time.Now(), date)
+func IsThisHour(date time.Time) bool {
+	return IsSameHour(time.Now(), date)
 }
 
-func setHours(date time.Time, hours int) time.Time {
+func SetHours(date time.Time, hours int) time.Time {
 	return time.Date(date.Year(), date.Month(), date.Day(), hours, date.Minute(), date.Second(), date.Nanosecond(), date.Location())
 }
 
-func startOfHour(date time.Time) time.Time {
+func StartOfHour(date time.Time) time.Time {
 	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), 0, date.Second(), date.Nanosecond(), date.Location())
 }
 
