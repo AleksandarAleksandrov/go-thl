@@ -195,7 +195,7 @@ func GetOverlappingDaysInRanges(
 	areOverlapping := AreRangesOverlapping(initialRangeStartDate, initialRangeEndDate, endRangeStartDate, endRangeEndDate)
 
 	if !areOverlapping {
-		return 0, errors.New("Ranges do no overlap")
+		return 0, errors.New("Ranges do not overlap")
 	}
 
 	return -1 * DaysDifference(endRangeStartDate, initialRangeEndDate), nil
@@ -223,8 +223,8 @@ func GetMilliseconds(date time.Time) int {
 }
 
 func SetMillisecond(date time.Time, amount int) (time.Time, error) {
-	if amount < 0 || amount > 1000 {
-		return date, errors.New("Passed amount was less than 0 or more than 1000. Date left unchanged.")
+	if amount < 0 || amount > 999 {
+		return date, errors.New("Passed amount was less than 0 or more than 999. Date left unchanged.")
 	}
 	return time.Date(date.Year(),
 		date.Month(),
@@ -254,7 +254,7 @@ func EndOfSecond(date time.Time) time.Time {
 		date.Hour(),
 		date.Minute(),
 		date.Second(),
-		999999,
+		999999999,
 		date.Location())
 }
 
@@ -272,8 +272,18 @@ func IsThisSecond(date time.Time) bool {
 	return IsSameSecond(date, now)
 }
 
-func SetSeconds(date time.Time, seconds int) time.Time {
-	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), seconds, date.Nanosecond(), date.Location())
+func SetSeconds(date time.Time, seconds int) (time.Time, error) {
+	if seconds < 0 || seconds > 59 {
+		return date, errors.New("Passed amount was less than 0 or more than 59. Date left unchanged.")
+	}
+	return time.Date(date.Year(),
+		date.Month(),
+		date.Day(),
+		date.Hour(),
+		date.Minute(),
+		seconds,
+		date.Nanosecond(),
+		date.Location()), nil
 }
 
 func StartOfSecond(date time.Time) time.Time {
@@ -291,7 +301,7 @@ func DifferenceInMinutes(dateLeft, dateRight time.Time) float64 {
 }
 
 func EndOfMinute(date time.Time) time.Time {
-	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), 59, date.Nanosecond(), date.Location())
+	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), 59, 999999999, date.Location())
 }
 
 func IsSameMinute(dateLeft, dateRight time.Time) bool {
@@ -307,12 +317,24 @@ func IsThisMinute(date time.Time) bool {
 	return IsSameMinute(date, now)
 }
 
-func SetMinutes(date time.Time, minutes int) time.Time {
-	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), minutes, date.Second(), date.Nanosecond(), date.Location())
+func SetMinutes(date time.Time, minutes int) (time.Time, error) {
+
+	if minutes < 0 || minutes > 59 {
+		return date, errors.New("Passed amount was less than 0 or more than 59. Date left unchanged.")
+	}
+
+	return time.Date(date.Year(),
+		date.Month(),
+		date.Day(),
+		date.Hour(),
+		minutes,
+		date.Second(),
+		date.Nanosecond(),
+		date.Location()), nil
 }
 
 func StartOfMinute(date time.Time) time.Time {
-	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), 0, date.Nanosecond(), date.Location())
+	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), 0, 0, date.Location())
 }
 
 // hour helpers
@@ -325,7 +347,7 @@ func DifferenceInHours(dateLeft, dateRight time.Time) float64 {
 }
 
 func EndOfHour(date time.Time) time.Time {
-	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), 59, date.Second(), date.Nanosecond(), date.Location())
+	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), 59, 59, 999999999, date.Location())
 }
 
 func IsSameHour(dateLeft, dateRight time.Time) bool {
@@ -339,12 +361,24 @@ func IsThisHour(date time.Time) bool {
 	return IsSameHour(time.Now(), date)
 }
 
-func SetHours(date time.Time, hours int) time.Time {
-	return time.Date(date.Year(), date.Month(), date.Day(), hours, date.Minute(), date.Second(), date.Nanosecond(), date.Location())
+func SetHours(date time.Time, hours int) (time.Time, error) {
+	if hours < 0 || hours > 23 {
+		return date, errors.New("Passed amount was less than 0 or more than 23. Date left unchanged.")
+	}
+
+	return time.Date(
+		date.Year(),
+		date.Month(),
+		date.Day(),
+		hours,
+		date.Minute(),
+		date.Second(),
+		date.Nanosecond(),
+		date.Location()), nil
 }
 
 func StartOfHour(date time.Time) time.Time {
-	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), 0, date.Second(), date.Nanosecond(), date.Location())
+	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), 0, 0, 0, date.Location())
 }
 
 //days helper
@@ -365,71 +399,5 @@ func DaysDifference(endDate, startDate time.Time) (days int) {
 		cur = FirstDayOfNextYear(cur)
 	}
 	days += endDate.YearDay() - cur.YearDay()
-	if startDate.AddDate(0, 0, days).After(endDate) {
-		days -= 1
-	}
 	return days
-}
-
-func someShit() {
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
 }
