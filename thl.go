@@ -198,7 +198,7 @@ func GetOverlappingDaysInRanges(
 		return 0, errors.New("Ranges do not overlap")
 	}
 
-	return -1 * DaysDifference(endRangeStartDate, initialRangeEndDate), nil
+	return -1 * DifferenceInDays(endRangeStartDate, initialRangeEndDate), nil
 }
 
 // Cheks if the passed date is within the range
@@ -391,7 +391,11 @@ func FirstDayOfNextYear(t time.Time) time.Time {
 	return time.Date(t.Year()+1, 1, 1, 0, 0, 0, 0, t.Location())
 }
 
-func DaysDifference(endDate, startDate time.Time) (days int) {
+func FirstDayOfYear(t time.Time) time.Time {
+	return time.Date(t.Year(), 1, 1, 0, 0, 0, 0, t.Location())
+}
+
+func DifferenceInDays(endDate, startDate time.Time) (days int) {
 	cur := startDate
 	for cur.Year() < endDate.Year() {
 		// add 1 to count the last day of the year too.
@@ -400,4 +404,166 @@ func DaysDifference(endDate, startDate time.Time) (days int) {
 	}
 	days += endDate.YearDay() - cur.YearDay()
 	return days
+}
+
+func AddDays(date time.Time, amount int) time.Time {
+	return date.Add(time.Hour * 24 * time.Duration(amount))
+}
+
+func EndOfDay(date time.Time) time.Time {
+	return time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 999999999, date.Location())
+}
+
+func StartOfDay(date time.Time) time.Time {
+	return time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
+}
+
+func EachDay(startDate, endDate time.Time) ([]time.Time, error) {
+	var datesRange []time.Time
+
+	if endDate.Before(startDate) {
+		return datesRange, errors.New("End date can not be before start date. Returned empty slice.")
+	}
+
+	counterDate := AddDays(startDate, 1)
+
+	for counterDate.Before(endDate) {
+		datesRange = append(datesRange, counterDate)
+		counterDate = StartOfDay(AddDays(counterDate, 1))
+	}
+
+	return datesRange, nil
+}
+
+func IsSameDay(firstDay, secondDay time.Time) bool {
+	return firstDay.Year() == secondDay.Year() &&
+		firstDay.Month() == secondDay.Month() &&
+		firstDay.Day() == secondDay.Day()
+}
+
+func EndOfToday() time.Time {
+	return EndOfDay(time.Now())
+}
+
+func EndOfTomorrow() time.Time {
+	return EndOfDay(AddDays(time.Now(), 1))
+}
+
+func EndOfYesterday() time.Time {
+	return EndOfDay(AddDays(time.Now(), -1))
+}
+
+func StartOfToday() time.Time {
+	return StartOfDay(time.Now())
+}
+
+func StartOfTomorrow() time.Time {
+	return StartOfDay(AddDays(time.Now(), 1))
+}
+
+func StartOfYesterday() time.Time {
+	return StartOfDay(AddDays(time.Now(), -1))
+}
+
+func IsToday(date time.Time) bool {
+	return IsSameDay(date, time.Now())
+}
+
+func IsTomorrow(date time.Time) bool {
+	return IsSameDay(date, AddDays(time.Now(), 1))
+}
+
+func IsYesterday(date time.Time) bool {
+	return IsSameDay(date, AddDays(time.Now(), -1))
+}
+
+func IsLeapYear(year int) bool {
+	if year%4 != 0 {
+		return false
+	} else if year%400 == 0 {
+		return true
+	} else if year%100 == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+func SetDayOfYear(date time.Time, dayNumber int) (time.Time, error) {
+	daysInYear := 365
+	if IsLeapYear(date.Year()) {
+		daysInYear++
+	}
+
+	if dayNumber < 0 || dayNumber > daysInYear {
+		return date, errors.New("Given day number if out of range. Returned unchanged date.")
+	}
+
+	return AddDays(FirstDayOfYear(date), dayNumber), nil
+}
+
+func SetDayOfMonth(date time.Time, dayMonthNumber int) time.Time {
+	return time.Date(date.Year(),
+		date.Month(),
+		dayMonthNumber,
+		date.Hour(),
+		date.Minute(),
+		date.Second(),
+		date.Nanosecond(),
+		date.Location())
+}
+
+// weekdays helpers
+
+func IsWeekend(date time.Time) bool {
+	return date.Weekday() == time.Saturday || date.Weekday() == time.Sunday
+}
+
+func IsMonToFri(date time.Time) bool {
+	weekday := date.Weekday()
+	return weekday == time.Monday ||
+		weekday == time.Tuesday ||
+		weekday == time.Wednesday ||
+		weekday == time.Thursday ||
+		weekday == time.Friday
+}
+
+// week helpers
+
+func EndOfWeek(date time.Time) time.Time {
+	weekday := date.Weekday()
+	// 0 == Sunday
+	if weekday == 0 {
+		return EndOfDay(date)
+	}
+	weekDiff := 7 - weekday
+	return EndOfDay(AddDays(date, int(weekDiff)))
+}
+
+func StartOfWeek(date time.Time) time.Time {
+	return StartOfDay(AddDays(EndOfWeek(date), -7))
+}
+
+func IsSameWeek(dateOne, dateTwo time.Time) bool {
+	weekOne := EndOfWeek(dateOne)
+	weekTwo := EndOfWeek(dateTwo)
+	return IsSameDay(weekOne, weekTwo)
+}
+
+func IsThisWeek(date time.Time) bool {
+	return IsSameWeek(date, time.Now())
+}
+
+func AddWeeks(date time.Time, amount int) time.Time {
+	return AddDays(date, 7*amount)
+}
+
+func DifferenceInWeeks(endDate, startDate time.Time) int {
+	return DifferenceInDays(endDate, startDate) / 7
+}
+
+// month helpers
+
+func IsSameMonth(dateOne, dateTwo time.Time) bool {
+	return dateOne.Year() == dateTwo.Year() && dateOne.Month() == dateTwo.Month()
 }

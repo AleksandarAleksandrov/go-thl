@@ -416,14 +416,54 @@ func ExampleFirstDayOfNextYear() {
 	// 2018-01-01 00:00:00 +0000 UTC
 }
 
-func ExampleDaysDifference() {
+func ExampleDifferenceInDays() {
 	fmt.Println(third)
 	fmt.Println(LastDayOfYear(third))
-	fmt.Println(DaysDifference(LastDayOfYear(third), third))
-	fmt.Println(DaysDifference(third, LastDayOfYear(third)))
+	fmt.Println(DifferenceInDays(LastDayOfYear(third), third))
+	fmt.Println(DifferenceInDays(third, LastDayOfYear(third)))
 	// Output:
 	// 2016-06-06 06:06:06.000000007 +0000 UTC
 	// 2016-12-31 00:00:00 +0000 UTC
 	// 208
 	// -208
+}
+
+func ExampleAddDays() {
+	fmt.Println(futureDate)
+	fmt.Println(AddDays(futureDate, 13))
+	// Output:
+	// 3001-01-01 00:00:00 +0000 UTC
+	// 3001-01-14 00:00:00 +0000 UTC
+}
+
+func ExampleEachDay() {
+	fmt.Println(EachDay(AddDays(futureDate, 1), futureDate))
+	fmt.Println(EachDay(futureDate, AddDays(futureDate, 4)))
+	// Output:
+	// [] End date can not be before start date. Returned empty slice.
+	// [3001-01-02 00:00:00 +0000 UTC 3001-01-03 00:00:00 +0000 UTC 3001-01-04 00:00:00 +0000 UTC] <nil>
+}
+
+func ExampleEndOfDay() {
+	fmt.Println(third)
+	fmt.Println(EndOfDay(third))
+	// Output:
+	// 2016-06-06 06:06:06.000000007 +0000 UTC
+	// 2016-06-06 23:59:59.999999999 +0000 UTC
+}
+
+func ExampleStartOfDay() {
+	fmt.Println(third)
+	fmt.Println(StartOfDay(third))
+	// Output:
+	// 2016-06-06 06:06:06.000000007 +0000 UTC
+	// 2016-06-06 00:00:00 +0000 UTC
+}
+
+func ExampleIsSameDay() {
+	fmt.Println(IsSameDay(futureDate, AddHours(futureDate, 23)))
+	fmt.Println(IsSameDay(futureDate, AddHours(futureDate, 24)))
+	// Output:
+	// true
+	// false
 }
