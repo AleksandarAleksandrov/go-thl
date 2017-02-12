@@ -53,7 +53,7 @@ func SortDesc(timeSlice []time.Time) {
 	Sort(timeSlice, DESC)
 }
 
-// Compares two dates and returns:
+// Compare two dates and return:
 // -1 if the first date is before the second date
 // 0 if they are the same date
 // 1 is the second date is before the first date
@@ -502,7 +502,11 @@ func SetDayOfYear(date time.Time, dayNumber int) (time.Time, error) {
 	return AddDays(FirstDayOfYear(date), dayNumber), nil
 }
 
-func SetDayOfMonth(date time.Time, dayMonthNumber int) time.Time {
+func SetDayOfMonth(date time.Time, dayMonthNumber int) (time.Time, error) {
+	daysInMonth := GetDaysInMonth(date)
+	if dayMonthNumber > daysInMonth {
+		return time.Time{}, errors.New("Passed days count is bigger than the days count in the month of the passed date")
+	}
 	return time.Date(date.Year(),
 		date.Month(),
 		dayMonthNumber,
@@ -510,7 +514,7 @@ func SetDayOfMonth(date time.Time, dayMonthNumber int) time.Time {
 		date.Minute(),
 		date.Second(),
 		date.Nanosecond(),
-		date.Location())
+		date.Location()), nil
 }
 
 // weekdays helpers
@@ -566,4 +570,191 @@ func DifferenceInWeeks(endDate, startDate time.Time) int {
 
 func IsSameMonth(dateOne, dateTwo time.Time) bool {
 	return dateOne.Year() == dateTwo.Year() && dateOne.Month() == dateTwo.Month()
+}
+
+func AddMonths(date time.Time, amount int) time.Time {
+	years := amount / 12
+	leftOverMonths := amount % 12
+	dateToReturn := time.Date(
+		date.Year()+years,
+		date.Month()+time.Month(leftOverMonths),
+		date.Day(),
+		date.Hour(),
+		date.Minute(),
+		date.Second(),
+		date.Nanosecond(),
+		date.Location())
+	return dateToReturn
+}
+
+func GetDaysInMonth(date time.Time) int {
+	if IsLeapYear(date.Year()) && time.February == date.Month() {
+		return 29
+	}
+
+	if time.February == date.Month() {
+		return 28
+	}
+
+	month := date.Month()
+	if time.January == month ||
+		time.March == month ||
+		time.May == month ||
+		time.July == month ||
+		time.August == month ||
+		time.October == month ||
+		time.December == month {
+		return 31
+	}
+
+	return 30
+}
+
+func EndOfMonth(date time.Time) time.Time {
+	monthDays := GetDaysInMonth(date)
+	dateToReturn, err := SetDayOfMonth(date, monthDays)
+	if err != nil {
+		// TODO:
+	}
+	return time.Date(dateToReturn.Year(),
+		dateToReturn.Month(),
+		dateToReturn.Day(),
+		23, 59, 59, 999999999,
+		dateToReturn.Location())
+}
+
+func IsFirstDayOfMonth(date time.Time) bool {
+	return date.Day() == 1
+}
+
+func IsLastDayOfMonth(date time.Time) bool {
+	daysIsMonth := GetDaysInMonth(date)
+	return daysIsMonth == date.Day()
+}
+
+func IsThisMonth(date time.Time) bool {
+	return IsSameMonth(date, time.Now())
+}
+
+func StartOfMonth(date time.Time) time.Time {
+	return time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, date.Location())
+}
+
+// quaters helpers
+
+func AddQuarters(date time.Time, amount int) time.Time {
+	return AddMonths(date, amount*3)
+}
+
+func IsFirstQuarter(date time.Time) bool {
+	return time.January == date.Month() || time.February == date.Month() || time.March == date.Month()
+}
+
+func IsSecondQuarter(date time.Time) bool {
+	return time.April == date.Month() || time.May == date.Month() || time.June == date.Month()
+}
+
+func IsThirdQuarter(date time.Time) bool {
+	return time.July == date.Month() || time.August == date.Month() || time.September == date.Month()
+}
+
+func IsFourthQuarter(date time.Time) bool {
+	return time.October == date.Month() || time.November == date.Month() || time.December == date.Month()
+}
+
+func EndOfQuarter(date time.Time) time.Time {
+	if IsFirstQuarter(date) {
+		return time.Date(date.Year(), time.March, 31, 23, 59, 59, 999999999, date.Location())
+	}
+
+	if IsSecondQuarter(date) {
+		return time.Date(date.Year(), time.June, 31, 23, 59, 59, 999999999, date.Location())
+	}
+
+	if IsFirstQuarter(date) {
+		return time.Date(date.Year(), time.September, 31, 23, 59, 59, 999999999, date.Location())
+	}
+
+	return time.Date(date.Year(), time.December, 31, 23, 59, 59, 999999999, date.Location())
+}
+
+func StartOfQuarter(date time.Time) time.Time {
+	if IsFirstQuarter(date) {
+		return time.Date(date.Year(), time.January, 1, 0, 0, 0, 0, date.Location())
+	}
+
+	if IsSecondQuarter(date) {
+		return time.Date(date.Year(), time.April, 1, 0, 0, 0, 0, date.Location())
+	}
+
+	if IsFirstQuarter(date) {
+		return time.Date(date.Year(), time.July, 1, 0, 0, 0, 0, date.Location())
+	}
+
+	return time.Date(date.Year(), time.October, 1, 0, 0, 0, 0, date.Location())
+}
+
+func GetQuarter(date time.Time) int {
+	if IsFirstQuarter(date) {
+		return 1
+	}
+	if IsSecondQuarter(date) {
+		return 2
+	}
+	if IsFirstQuarter(date) {
+		return 3
+	}
+	return 4
+}
+
+func IsSameQuarter(dateOne, dateTwo time.Time) bool {
+	if dateOne.Year() != dateTwo.Year() {
+		return false
+	}
+	return EndOfQuarter(dateOne) == EndOfQuarter(dateTwo)
+}
+
+func IsThisQuarter(date time.Time) bool {
+	return IsSameQuarter(date, time.Now())
+}
+
+// year helpers
+
+func AddYears(date time.Time, amount int) time.Time {
+	return time.Date(date.Year()+amount,
+		date.Month(),
+		date.Day(),
+		date.Hour(),
+		date.Minute(),
+		date.Second(),
+		date.Nanosecond(),
+		date.Location())
+}
+
+func SetYear(date time.Time, year int) time.Time {
+	return time.Date(year,
+		date.Month(),
+		date.Day(),
+		date.Hour(),
+		date.Minute(),
+		date.Second(),
+		date.Nanosecond(),
+		date.Location())
+}
+
+func EndOfYear(date time.Time) time.Time {
+	return time.Date(date.Year(), time.December,
+		31, 23, 59, 59, 999999999, date.Location())
+}
+
+func StartOfYear(date time.Time) time.Time {
+	return time.Date(date.Year(), time.January, 1, 0, 0, 0, 0, date.Location())
+}
+
+func IsSameYear(dateOne, dateTwo time.Time) bool {
+	return dateOne.Year() == dateTwo.Year()
+}
+
+func IsThisYear(date time.Time) bool {
+	return IsSameYear(date, time.Now())
 }
