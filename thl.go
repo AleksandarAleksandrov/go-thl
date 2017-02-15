@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+/***********************
+ *** General Helpers ***
+ ***********************/
+
 // Internal structure used for sorting slices of dates
 type timeSort []time.Time
 
@@ -33,7 +37,7 @@ const ASC Constant = 1
 // DESC is used to sort dates reverse chronologically
 const DESC Constant = -1
 
-// Sorts the given slice of dates depending on the comparator value
+// Sort the given slice of dates depending on the comparator value
 func Sort(timeSlice []time.Time, comparator Constant) {
 	tm := timeSort(timeSlice)
 	if ASC == comparator {
@@ -43,12 +47,12 @@ func Sort(timeSlice []time.Time, comparator Constant) {
 	}
 }
 
-// Sorts a slice of dates chronologically
+// SortAsc sorts a slice of dates chronologically
 func SortAsc(timeSlice []time.Time) {
 	Sort(timeSlice, ASC)
 }
 
-// Sorts a slice of date reverse chronologically
+// SortDesc sorts a slice of date reverse chronologically
 func SortDesc(timeSlice []time.Time) {
 	Sort(timeSlice, DESC)
 }
@@ -206,7 +210,9 @@ func IsWithinRange(date, startDate, endDate time.Time) bool {
 	return date.After(startDate) && date.Before(endDate)
 }
 
-// milisecond helpers
+/****************************
+ *** Millisecond Helpers ***
+ ****************************/
 
 func AddMilliseconds(date time.Time, amount int) time.Time {
 	return date.Add(time.Millisecond * time.Duration(amount))
@@ -236,7 +242,9 @@ func SetMillisecond(date time.Time, amount int) (time.Time, error) {
 		date.Location()), nil
 }
 
-// seconds helper
+/**********************
+ *** Second Helpers ***
+ **********************/
 
 func AddSeconds(date time.Time, amount int) time.Time {
 	return date.Add(time.Second * time.Duration(amount))
@@ -290,7 +298,9 @@ func StartOfSecond(date time.Time) time.Time {
 	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), date.Second(), 0, date.Location())
 }
 
-// minute helpers
+/**********************
+ *** Minute Helpers ***
+ **********************/
 
 func AddMinutes(date time.Time, amount int) time.Time {
 	return date.Add(time.Minute * time.Duration(amount))
@@ -337,7 +347,10 @@ func StartOfMinute(date time.Time) time.Time {
 	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), 0, 0, date.Location())
 }
 
-// hour helpers
+/********************
+ *** Hour Helpers ***
+ ********************/
+
 func AddHours(date time.Time, amount int) time.Time {
 	return date.Add(time.Hour * time.Duration(amount))
 }
@@ -381,7 +394,9 @@ func StartOfHour(date time.Time) time.Time {
 	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), 0, 0, 0, date.Location())
 }
 
-//days helper
+/*******************
+ *** Day Helpers ***
+ *******************/
 
 func LastDayOfYear(t time.Time) time.Time {
 	return time.Date(t.Year(), 12, 31, 0, 0, 0, 0, t.Location())
@@ -477,18 +492,6 @@ func IsYesterday(date time.Time) bool {
 	return IsSameDay(date, AddDays(time.Now(), -1))
 }
 
-func IsLeapYear(year int) bool {
-	if year%4 != 0 {
-		return false
-	} else if year%400 == 0 {
-		return true
-	} else if year%100 == 0 {
-		return false
-	} else {
-		return true
-	}
-}
-
 func SetDayOfYear(date time.Time, dayNumber int) (time.Time, error) {
 	daysInYear := 365
 	if IsLeapYear(date.Year()) {
@@ -517,7 +520,9 @@ func SetDayOfMonth(date time.Time, dayMonthNumber int) (time.Time, error) {
 		date.Location()), nil
 }
 
-// weekdays helpers
+/***********************
+ *** Weekday Helpers ***
+ ***********************/
 
 func IsWeekend(date time.Time) bool {
 	return date.Weekday() == time.Saturday || date.Weekday() == time.Sunday
@@ -532,7 +537,9 @@ func IsMonToFri(date time.Time) bool {
 		weekday == time.Friday
 }
 
-// week helpers
+/********************
+ *** Week Helpers ***
+ ********************/
 
 func EndOfWeek(date time.Time) time.Time {
 	weekday := date.Weekday()
@@ -566,7 +573,9 @@ func DifferenceInWeeks(endDate, startDate time.Time) int {
 	return DifferenceInDays(endDate, startDate) / 7
 }
 
-// month helpers
+/*********************
+ *** Month Helpers ***
+ *********************/
 
 func IsSameMonth(dateOne, dateTwo time.Time) bool {
 	return dateOne.Year() == dateTwo.Year() && dateOne.Month() == dateTwo.Month()
@@ -612,10 +621,7 @@ func GetDaysInMonth(date time.Time) int {
 
 func EndOfMonth(date time.Time) time.Time {
 	monthDays := GetDaysInMonth(date)
-	dateToReturn, err := SetDayOfMonth(date, monthDays)
-	if err != nil {
-		// TODO:
-	}
+	dateToReturn, _ := SetDayOfMonth(date, monthDays)
 	return time.Date(dateToReturn.Year(),
 		dateToReturn.Month(),
 		dateToReturn.Day(),
@@ -640,7 +646,9 @@ func StartOfMonth(date time.Time) time.Time {
 	return time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, date.Location())
 }
 
-// quaters helpers
+/***********************
+ *** Quarter Helpers ***
+ ***********************/
 
 func AddQuarters(date time.Time, amount int) time.Time {
 	return AddMonths(date, amount*3)
@@ -718,7 +726,21 @@ func IsThisQuarter(date time.Time) bool {
 	return IsSameQuarter(date, time.Now())
 }
 
-// year helpers
+/********************
+ *** Year Helpers ***
+ ********************/
+
+func IsLeapYear(year int) bool {
+	if year%4 != 0 {
+		return false
+	} else if year%400 == 0 {
+		return true
+	} else if year%100 == 0 {
+		return false
+	} else {
+		return true
+	}
+}
 
 func AddYears(date time.Time, amount int) time.Time {
 	return time.Date(date.Year()+amount,
